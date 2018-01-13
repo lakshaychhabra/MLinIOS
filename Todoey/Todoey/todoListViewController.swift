@@ -11,9 +11,16 @@ import UIKit
 class TodoListViewController: UITableViewController {
 
     var itemArray = ["Eggs", "Milk", "Fruits"]
+    let defaults = UserDefaults.standard
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if let items = defaults.array(forKey: "TodolistArray" ) as? [String] {
+            itemArray = items
+        }
+        
         
     }
     
@@ -63,7 +70,11 @@ class TodoListViewController: UITableViewController {
             //what will happen when user will click add button
             self.itemArray.append(textField.text!)
         
+            self.defaults.setValue(self.itemArray, forKey: "TodolistArray")
+            
+            
             self.tableView.reloadData()
+            
         }
         
         alert.addTextField { (alertTextField) in
