@@ -1,0 +1,21 @@
+//
+//  item.swift
+//  Todoey
+//
+//  Created by Lakshay Chhabra on 14/01/18.
+//  Copyright © 2018 Lakshay Chhabra. All rights reserved.
+//
+
+import Foundation
+
+class Item {
+    
+    var title : String = ""
+    var done : Bool = false
+    
+    
+}
+
+
+
+
