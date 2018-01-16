@@ -14,7 +14,11 @@ class TodoListViewController: UITableViewController {
     
     
     var itemArray = [Item]()
-
+    var selectedCategory : Category? {
+        didSet{
+            loadItems()
+        }
+    }
     
     //    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("item.plist")  //Was used for plist
     
@@ -29,13 +33,7 @@ class TodoListViewController: UITableViewController {
         print("Started")
         
        
-        
-        loadItems()
-        
-//        if let items = defaults.array(forKey: "TodolistArray" ) as? [Item] {
-//            itemArray = items
-//        }earlier we used it for defaults but now we using decoders
-        
+  
         
     }
     
@@ -55,13 +53,7 @@ class TodoListViewController: UITableViewController {
             cell.textLabel?.text = item.title
         
         cell.accessoryType = item.done ? .checkmark : .none
-        
-//        if itemArray[indexPath.row].done == true {
-//            cell.accessoryType = .checkmark
-//        }else{
-//            cell.accessoryType = .none
-//        } used ternanary instead of this
-        
+   
                 return cell
         
     }
@@ -70,17 +62,11 @@ class TodoListViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
        
-        //for deleting
-//        context.delete(itemArray[indexPath.row])
-//        itemArray.remove(at: indexPath.row)
+    
         
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-//        if itemArray[indexPath.row].done == false {
-//            itemArray[indexPath.row].done = true
-//        }else{
-//            itemArray[indexPath.row].done = false
-//        }
+
         saveData()
        
         
@@ -105,6 +91,7 @@ class TodoListViewController: UITableViewController {
             
             newItem.title = textField.text!
             newItem.done = false
+            newItem.parentCategory = self.selectedCategory
             
             self.itemArray.append(newItem)
         
@@ -140,24 +127,17 @@ class TodoListViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    func loadItems(with request : NSFetchRequest<Item> =  Item.fetchRequest()){
-//
-//        let data = try? Data(contentsOf: dataFilePath!)
-//            let decoder = PropertyListDecoder()
-//            do{
-//                itemArray = try decoder.decode([Item].self, from: data!)
-//            }catch{
-//                print("Error decoding \(error)")
-//            }
-//
-//that was for plist
+    func loadItems(with request : NSFetchRequest<Item> =  Item.fetchRequest(), predicate: NSPredicate? = nil){
+
         
+       let categorypredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
         
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categorypredicate, additionalPredicate])
+        }else{
+            request.predicate = categorypredicate
+        }
         
-    // now for core data
-        
-       
-//
   
         do{
             itemArray = try context.fetch(request)
@@ -183,14 +163,14 @@ extension TodoListViewController : UISearchBarDelegate{
         
         let request  : NSFetchRequest<Item> = Item.fetchRequest()
         
-        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+       let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         
         
         
             request.sortDescriptors  = [NSSortDescriptor(key: "title", ascending: true)]
         
         
-        loadItems(with: request)
+        loadItems(with: request, predicate: predicate)
         
         
        
